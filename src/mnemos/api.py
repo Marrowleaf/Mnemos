@@ -34,25 +34,32 @@ class AgentMemoryAPI:
         self,
         query: Optional[str] = None,
         *,
+        layer: Optional[MemoryLayer] = None,
         scope: Optional[MemoryScope] = None,
         session_id: Optional[str] = None,
         limit: int = 10,
     ) -> Sequence[MemoryRecord]:
-        results = self.store.list_records(scope=scope.value if scope else None)
-        scored = []
+        scope_value = scope.value if scope else None
+        results = self.store.list_records(scope=scope_value)
+        scored: list[tuple[float, MemoryRecord]] = []
         for item in results:
-            text = (item.content or "").lower()
-            score = item.importance or 0.0
             if query:
-                q = query.lower()
-                if q in text:
-                    score += 0.5
+                query_lower = query.lower()
+                text = (item.content or "").lower()
+                if query_lower not in text:
+                    continue
+            if layer and item.layer != layer:
+                continue
+            score = float(item.importance or 0.0)
             scored.append((score, item))
         scored.sort(key=lambda pair: (pair[0], pair[1].created_at or datetime.min), reverse=True)
         return [item for _, item in scored[:limit]]
 
     def forget(self, record_id: str) -> bool:
-        return self.store.delete(record_id)
+        try:
+            return self.store.delete(record_id)
+        except Exception:
+            return False
 
 
 __all__ = ["AgentMemoryAPI"]
