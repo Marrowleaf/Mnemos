@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "mnemos"
+version = "0.1.0"
+description = "Minimal layered memory for AI agents"
+requires-python = ">=3.11"
+dependencies = ["pydantic>=2", "sqlalchemy>=2"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
