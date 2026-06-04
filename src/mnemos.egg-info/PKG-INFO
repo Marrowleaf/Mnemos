@@ -1,9 +1,0 @@
-Metadata-Version: 2.4
-Name: mnemos
-Version: 0.1.0
-Summary: Minimal layered memory for AI agents
-Requires-Python: >=3.11
-Requires-Dist: pydantic>=2
-Requires-Dist: sqlalchemy>=2
-Provides-Extra: dev
-Requires-Dist: pytest; extra == "dev"
