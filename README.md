@@ -1,39 +1,40 @@
-[![CI](https://github.com/Marrowleaf/agent-memory-system/actions/workflows/ci.yml/badge.svg)](https://github.com/Marrowleaf/agent-memory-system/actions/workflows/ci.yml)
-[![Coverage](https://raw.githubusercontent.com/Marrowleaf/agent-memory-system/main/assets/coverage-badge.svg)](https://github.com/Marrowleaf/agent-memory-system/actions)
+# Agent Memory System
 
-**Agent Memory System** — a layered, schema-aware memory layer for AI agents with formal write/read protocols, compaction, and hierarchical payloads.
+Lightweight layered memory for AI agents:
+- layers: `working`, `episodic`, `semantic`
+- scopes: `session`, `user`, `agent`
+- storage: SQLite via SQLAlchemy
+- operations: remember, recall, forget
 
-[GitHub](https://github.com/Marrowleaf/agent-memory-system) · [Issues](https://github.com/Marrowleaf/agent-memory-system/issues) · [Changelog](./CHANGELOG.md)
+```python
+from agent_memory_system import AgentMemoryAPI, MemoryLayer, MemoryScope
 
-## Why this exists
-
-Existing agent memory tools are built as specific integrations (Mem0, Zep, Letta). This package is built as a **protocol + storage layer** other systems can adopt: consistent memory semantics, relationship-aware operations, and a stable operator vocabulary.
-
-## Key ideas
-
-- Three memory layers with explicit flow between them
-- Formal write/read queries with idempotent upserts
-- Compaction policy for memory under pressure
-- Hierarchical payload format agents can use without lock-in
-
-## Quick start
-
-```bash
-git clone https://github.com/Marrowleaf/agent-memory-system.git
-cd agent-memory-system
-python -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
+api = AgentMemoryAPI()
+api.remember("James prefers Tailscale tunnels", layer=MemoryLayer.SEMANTIC, scope=MemoryScope.USER)
+results = api.recall("Which tunnel does James prefer?", scope=MemoryScope.USER)
+api.forget(results[0].id)
 ```
 
-## Development
-
-- Run tests: `pytest -q`
-- Lint: `ruff check src tests`
-- Format: `ruff format src tests`
+## Install
+```bash
+pip install -e .
+```
 
 ## Status
+- 0.1.0 prototype
+- add/get/delete/recall implemented
+- no external dependencies beyond pydantic, sqlalchemy, numpy
 
-- Package: `agent_memory_system`
-- Python: `>=3.11`
-- License: MIT
+## Test
+```bash
+PYTHONPATH=src python - <<'PY'
+from agent_memory_system import AgentMemoryAPI, MemoryLayer, MemoryScope
+api = AgentMemoryAPI()
+api.remember("test", layer=MemoryLayer.WORKING, scope=MemoryScope.SESSION)
+print(api.recall("test"))
+PY
+```
+
+## Repository
+- developer: Marrowleaf
+- GitHub: [Marrowleaf/agent-memory-system](https://github.com/Marrowleaf/agent-memory-system)
