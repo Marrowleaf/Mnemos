@@ -10,8 +10,9 @@ from sqlalchemy import (
     Float,
     Integer,
     String,
+    create_engine,
 )
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import declarative_base, declared_attr
 
 from agent_memory_system.models import MemoryLayer, MemoryScope
 
@@ -32,4 +33,4 @@ class MemoryRecordORM(Base):
     decay = Column(Float, nullable=False, default=0.05)
     embedding = Column(JSON, nullable=True)
     content = Column(String, nullable=False)
-    metadata = Column("metadata", JSON, nullable=False, default=dict)
+    record_metadata = Column("metadata", JSON, nullable=False, default=dict)
