@@ -14,7 +14,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import declarative_base, declared_attr
 
-from agent_memory_system.models import MemoryLayer, MemoryScope
+from mnemos.models import MemoryLayer, MemoryScope
 
 Base = declarative_base()
 

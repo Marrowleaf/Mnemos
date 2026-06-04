@@ -4,8 +4,8 @@ import hashlib
 from datetime import datetime
 from typing import Iterable, Optional
 
-from agent_memory_system.memory import MemoryStore
-from agent_memory_system.models import MemoryLayer, MemoryRecord, MemoryScope
+from mnemos.memory import MemoryStore
+from mnemos.models import MemoryLayer, MemoryRecord, MemoryScope
 
 
 class AgentMemoryAPI:
@@ -44,7 +44,7 @@ class AgentMemoryAPI:
         scope: Optional[MemoryScope] = None,
         limit: int = 10,
     ):
-        from agent_memory_system.retrieval import MemoryRetriever
+        from mnemos.retrieval import MemoryRetriever
 
         retriever = MemoryRetriever(self.store)
         results = retriever.recall(query=query, scope=scope and scope.value, limit=limit)

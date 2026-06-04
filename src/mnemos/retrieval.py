@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Sequence
 
-from agent_memory_system.models import MemoryLayer, MemoryRecord
+from mnemos.models import MemoryLayer, MemoryRecord
 
 
 @dataclass

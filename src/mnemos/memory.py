@@ -6,8 +6,8 @@ from typing import Optional, Sequence
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from agent_memory_system.models import MemoryLayer, MemoryRecord
-from agent_memory_system.store import Base, MemoryRecordORM
+from mnemos.models import MemoryLayer, MemoryRecord
+from mnemos.store import Base, MemoryRecordORM
 
 
 class MemoryStore:
