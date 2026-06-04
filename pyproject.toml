@@ -1,5 +1,5 @@
 [project]
-name = "Mnemos"
+name = "agent-memory-system"
 version = "0.1.0"
 description = "Brand new layered memory system for AI agents"
 authors = [{ name = "Marrowleaf" }]

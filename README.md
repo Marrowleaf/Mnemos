@@ -1,4 +1,4 @@
-# Mnemos
+# Agent Memory System
 
 Lightweight layered memory for AI agents:
 - layers: `working`, `episodic`, `semantic`
@@ -7,7 +7,7 @@ Lightweight layered memory for AI agents:
 - operations: remember, recall, forget
 
 ```python
-from mnemos import AgentMemoryAPI, MemoryLayer, MemoryScope
+from agent_memory_system import AgentMemoryAPI, MemoryLayer, MemoryScope
 
 api = AgentMemoryAPI()
 api.remember("James prefers Tailscale tunnels", layer=MemoryLayer.SEMANTIC, scope=MemoryScope.USER)
@@ -28,7 +28,7 @@ pip install -e .
 ## Test
 ```bash
 PYTHONPATH=src python - <<'PY'
-from mnemos import AgentMemoryAPI, MemoryLayer, MemoryScope
+from agent_memory_system import AgentMemoryAPI, MemoryLayer, MemoryScope
 api = AgentMemoryAPI()
 api.remember("test", layer=MemoryLayer.WORKING, scope=MemoryScope.SESSION)
 print(api.recall("test"))
