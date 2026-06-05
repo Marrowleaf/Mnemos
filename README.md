@@ -1,27 +1,24 @@
 # Mnemos
 
-Minimal layered memory for AI agents:
-- layers: `working`, `episodic`, `semantic`
-- scopes: `session`, `user`, `agent`
-- storage: SQLite via SQLAlchemy
-- operations: remember, recall, forget, decay
+Mnemos is an integrated memory system for AI agents. It stores durable facts, preferences, and episodic events in a structured SQLite-backed store that can be read, recalled, and forgotten at runtime.
 
-**Status**
-- Imports verified
-- Remember/recall/forget smoke-tested
-- 8 pytest cases passing
-- Active Hermes memory provider plugin shipped at `/usr/local/lib/hermes-agent/plugins/memory/mnemos/`
+## Capabilities
+- Layered memory: `working`, `episodic`, `semantic`
+- Scoped retrieval: `session`, `user`, `agent`
+- Tagged records with recall-time filtering
+- TTL-aware expiry and pruning
+- Structured import/export snapshots
+- Modeled API surface for embedding into agent runtimes
+
+## Status
+- Importable Python package
+- Remember / recall / forget verified end to end
+- TTL pruning, tags, import/export, and snapshot tooling included
+- Intended for direct integration as an agent memory backend
 
 ## Install
 ```bash
 pip install mnemos
-```
-
-Or editable:
-```bash
-git clone https://github.com/Marrowleaf/Mnemos.git
-cd Mnemos
-pip install -e .
 ```
 
 ## Usage
@@ -29,16 +26,11 @@ pip install -e .
 from mnemos import AgentMemoryAPI, MemoryLayer, MemoryScope
 
 api = AgentMemoryAPI()
-api.remember("James prefers Tailscale tunnels", layer=MemoryLayer.SEMANTIC, scope=MemoryScope.USER)
+api.remember("Project uses Tailscale", layer=MemoryLayer.SEMANTIC, scope=MemoryScope.USER)
 results = api.recall("Which tunnel does James prefer?", scope=MemoryScope.USER)
 api.forget(results[0].id)
 ```
 
-## Hermes integration
-- Config: `memory.provider: mnemos` in `/root/.hermes/config.yaml`
-- Plugin: `mnemos` under Hermes memory provider plugins
-- Tools exposed: `mnemos_remember`, `mnemos_recall`, `mnemos_forget`
-
 ## Repository
-- developer: Marrowleaf
-- GitHub: [Marrowleaf/Mnemos](https://github.com/Marrowleaf/Mnemos)
+- Developer: Marrowleaf
+- GitHub: https://github.com/Marrowleaf/Mnemos
