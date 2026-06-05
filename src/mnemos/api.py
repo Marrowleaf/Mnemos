@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import json
-from datetime import datetime
+import re
+from datetime import datetime, timedelta
 from typing import Optional, Sequence
 
 from mnemos.memory import MemoryStore
@@ -50,6 +50,7 @@ class AgentMemoryAPI:
         session_id: Optional[str] = None,
         limit: int = 10,
         tags: Optional[list[str]] = None,
+        redact: bool = False,
     ) -> Sequence[MemoryRecord]:
         scope_value = scope.value if scope else None
         results = self.store.list_records(scope=scope_value)
@@ -70,7 +71,12 @@ class AgentMemoryAPI:
             score = float(item.importance or 0.0)
             scored.append((score, item))
         scored.sort(key=lambda pair: (pair[0], pair[1].created_at or datetime.min), reverse=True)
-        return [item for _, item in scored[:limit]]
+        out = [item for _, item in scored[:limit]]
+        return (
+            [self._maybe_redact(r, redact=True) for r in out]
+            if redact
+            else out
+        )
 
     def forget(self, record_id: str) -> bool:
         try:
@@ -106,13 +112,14 @@ class AgentMemoryAPI:
             layer=layer,
             limit=limit,
             tags=tags,
+            redact=False,
         )
         payload = []
         for record in records:
             data = record.model_dump(by_alias=True)
             data.setdefault("id", record.id)
             payload.append(data)
-        return json.dumps(payload, default=str)
+        return __import__("json").dumps(payload, default=str)
 
     def import_snapshot(
         self,
@@ -122,7 +129,7 @@ class AgentMemoryAPI:
         layer: Optional[MemoryLayer] = None,
         merge: bool = False,
     ) -> dict:
-        parsed = json.loads(payload)
+        parsed = __import__("json").loads(payload)
         if not isinstance(parsed, list):
             raise ValueError("snapshot payload must be a list")
         created = 0
@@ -147,6 +154,30 @@ class AgentMemoryAPI:
             self.store.add(record)
             created += 1
         return {"created": created, "skipped": skipped}
+
+    _PII_PATTERNS = (
+        r"[A-Za-z0-9._%+\-]+@[A-Za-z-z0-9.\-]+\.[A-Za-z]{2,}",
+        r"\b\+?\d{1,3}[-. (]*\d{3}[-. )]*\d{3}[-. ]*\d{4}\b",
+        r"\b\d{3}[-.]\d{2}[-.]\d{4}\b",
+        r"\b\d{3}-\d{2}-\d{4}\b",
+        r"\b\d{4}[- ]\d{4}[- ]\d{4}[- ]\d{4}\b",
+    )
+
+    def _redact_text(self, text: str) -> str:
+        value = text
+        for pattern in self._PII_PATTERNS:
+            value = re.sub(pattern, "[redacted]", value)
+        return value
+
+    def _maybe_redact(self, record: MemoryRecord, *, redact: bool) -> MemoryRecord:
+        if not redact or not record.content:
+            return record
+        return MemoryRecord(
+            **{
+                **record.model_dump(by_alias=False),
+                "content": self._redact_text(record.content),
+            }
+        )
 
 
 __all__ = ["AgentMemoryAPI"]
