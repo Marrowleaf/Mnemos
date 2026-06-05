@@ -3,11 +3,15 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Optional, Sequence
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, delete
 from sqlalchemy.orm import Session, sessionmaker
 
 from mnemos.models import MemoryLayer, MemoryRecord
 from mnemos.store import Base, MemoryRecordORM
+
+
+def _utcnow() -> datetime:
+    return datetime.utcnow()
 
 
 class MemoryStore:
@@ -22,7 +26,7 @@ class MemoryStore:
         Base.metadata.create_all(self.engine)
 
     def add(self, record: MemoryRecord) -> MemoryRecord:
-        now = datetime.utcnow()
+        now = _utcnow()
         record.updated_at = now
         if not record.created_at:
             record.created_at = now
@@ -39,7 +43,7 @@ class MemoryStore:
                 decay=float(record.decay),
                 embedding=list(record.embedding or []),
                 content=record.content,
-                metadata=dict(record.metadata or {}),
+                record_metadata=dict(record.metadata or {}),
             )
             session.add(orm)
             session.commit()
@@ -51,7 +55,10 @@ class MemoryStore:
         with self.SessionLocal() as session:
             orm = (
                 session.query(MemoryRecordORM)
-                .filter(MemoryRecordORM.external_id == record_id)
+                .filter(
+                    (MemoryRecordORM.external_id == record_id)
+                    | (MemoryRecordORM.id == int(record_id))
+                )
                 .one_or_none()
             )
             if not orm:
@@ -68,7 +75,7 @@ class MemoryStore:
                 decay=float(orm.decay),
                 embedding=list(orm.embedding or []),
                 content=orm.content,
-                metadata=dict(orm.metadata or {}),
+                metadata=dict(getattr(orm, "record_metadata", None) or {}),
             )
 
     def delete(self, record_id: str) -> bool:
@@ -112,6 +119,17 @@ class MemoryStore:
                     )
                 )
             return out
+
+    def prune_expired(self, *, before: Optional[datetime] = None) -> int:
+        with self.SessionLocal() as session:
+            when = before or _utcnow()
+            stmt = delete(MemoryRecordORM).where(
+                MemoryRecordORM.expires_at != None,
+                MemoryRecordORM.expires_at <= when,
+            )
+            result = session.execute(stmt)
+            session.commit()
+            return int(result.rowcount)
 
 
 __all__ = ["MemoryStore"]

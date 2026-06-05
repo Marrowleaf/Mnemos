@@ -61,7 +61,7 @@ class MemoryRecord(BaseModel):
     embedding: Optional[list[float]] = Field(default=None, alias="embedding")
     payload: MemoryPayload = Field(default_factory=MemoryPayload, alias="payload")
     content: str = Field(default="", alias="content")
-    metadata: Optional[dict[str, Any]] = Field(default=None, alias="metadata")
+    metadata: Optional[dict[str, Any]] = Field(default_factory=dict, alias="metadata")
 
     def to_public(self) -> dict[str, Any]:
         data = self.model_dump(by_alias=True)
