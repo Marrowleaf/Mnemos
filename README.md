@@ -169,7 +169,22 @@ Import a JSON snapshot. `merge=False` skips already-existing IDs; `merge=True` r
 
 ## Integration
 
-Mnemos is the active memory backend for the Hermes agent runtime, exposed via the `mnemos_remember`, `mnemos_recall`, and `mnemos_forget` tools. If you want to wire it into your own agent, use `AgentMemoryAPI` directly.
+### Python API
+Use Mnemos directly through `AgentMemoryAPI` in your own agent or service.
+
+### Hermes Plugin
+Mnemos ships as a Hermes memory provider plugin. Install it into `~/.hermes/plugins/mnemos/`, then enable it in `config.yaml` under `memory.provider: mnemos`.
+
+Example layout:
+
+```
+~/.hermes/plugins/mnemos/
+├── plugin.yaml
+├── __init__.py
+└── ...
+```
+
+Hermes exposes the tool surface as `mnemos_remember`, `mnemos_recall`, and `mnemos_forget`.
 
 ---
 
