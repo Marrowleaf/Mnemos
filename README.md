@@ -1,6 +1,8 @@
-# Mnemos
+# Mnemos — Agent Memory System
 
-**Mnemos** is a production-ready memory backend for AI agents. It provides a structured, SQLite-backed store for durable facts, preferences, episodic events, and session context — with scoped retrieval, tag filtering, expiry, and recall-time PII redaction. It is designed to be embedded directly into agent runtimes as a first-class persistence layer, not merely a prototype or experiment.
+**Mnemos** is a structured, SQLite-backed memory backend for AI agents. It stores durable facts, preferences, episodic events, and session context across runtime restarts — with scoped retrieval, tagging, TTL expiry, portable snapshots, and recall-time PII redaction.
+
+Built for integration, not demonstration. Zero external services. Designed for production agent runtimes.
 
 ---
 
