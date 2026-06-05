@@ -81,6 +81,17 @@ class AgentMemoryAPI:
     def prune_expired(self, *, before: Optional[datetime] = None) -> int:
         return self.store.prune_expired(before=before)
 
+    def suggest_tags(self, *, limit: int = 10) -> list[str]:
+        records = self.recall(query=None, limit=limit)
+        tag_counts: dict[str, int] = {}
+        for record in records:
+            tags = ((record.metadata or {}).get("tags") or [])
+            for tag in tags:
+                key = str(tag).lower()
+                tag_counts[key] = tag_counts.get(key, 0) + 1
+        ranked = sorted(tag_counts.items(), key=lambda item: (item[1], item[0]), reverse=True)
+        return [tag for tag, _ in ranked[:limit]]
+
     def export_snapshot(
         self,
         *,
