@@ -9,8 +9,12 @@ from mnemos.models import MemoryLayer, MemoryRecord, MemoryScope
 
 
 class AgentMemoryAPI:
-    def __init__(self, database_url: str = "sqlite:///memory.db") -> None:
-        self.store = MemoryStore(database_url=database_url)
+    def __init__(
+        self,
+        database_url: str = "sqlite:///memory.db",
+        encrypt: bool = False,
+    ) -> None:
+        self.store = MemoryStore(database_url=database_url, encrypt=encrypt)
 
     def remember(
         self,

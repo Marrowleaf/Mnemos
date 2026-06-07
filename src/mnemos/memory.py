@@ -15,7 +15,12 @@ def _utcnow() -> datetime:
 
 
 class MemoryStore:
-    def __init__(self, database_url: str = "sqlite:///memory.db") -> None:
+    def __init__(
+        self,
+        database_url: str = "sqlite:///memory.db",
+        encrypt: bool = False,
+    ) -> None:
+        self.encrypt_default = bool(encrypt)
         self.engine = create_engine(database_url, future=True)
         self.SessionLocal = sessionmaker(
             bind=self.engine,
@@ -32,6 +37,10 @@ class MemoryStore:
             record.created_at = now
 
         with self.SessionLocal() as session:
+            content = record.content or ""
+            if self.encrypt_default:
+                from mnemos.store import _encrypt
+                content = _encrypt(content)
             orm = MemoryRecordORM(
                 external_id=record.id,
                 layer=record.layer.value,
@@ -42,8 +51,9 @@ class MemoryStore:
                 importance=float(record.importance),
                 decay=float(record.decay),
                 embedding=list(record.embedding or []),
-                content=record.content,
+                content=content,
                 record_metadata=dict(record.metadata or {}),
+                encrypted="true" if self.encrypt_default else "false",
             )
             session.add(orm)
             session.commit()
@@ -63,20 +73,7 @@ class MemoryStore:
             )
             if not orm:
                 return None
-            updated_at = orm.updated_at or orm.created_at
-            return MemoryRecord(
-                id=orm.external_id or str(orm.id),
-                layer=orm.layer,
-                scope=orm.scope,
-                created_at=orm.created_at,
-                updated_at=updated_at,
-                expires_at=orm.expires_at,
-                importance=float(orm.importance),
-                decay=float(orm.decay),
-                embedding=list(orm.embedding or []),
-                content=orm.content,
-                metadata=dict(getattr(orm, "record_metadata", None) or {}),
-            )
+            return orm.to_model()
 
     def delete(self, record_id: str) -> bool:
         with self.SessionLocal() as session:
@@ -100,25 +97,7 @@ class MemoryStore:
             if scope:
                 query = query.filter(MemoryRecordORM.scope == scope)
             rows: list[MemoryRecordORM] = query.all()
-            out: list[MemoryRecord] = []
-            for row in rows:
-                updated_at = row.updated_at or row.created_at
-                out.append(
-                    MemoryRecord(
-                        id=row.external_id or str(row.id),
-                        layer=row.layer,
-                        scope=row.scope,
-                        created_at=row.created_at,
-                        updated_at=updated_at,
-                        expires_at=row.expires_at,
-                        importance=float(row.importance),
-                        decay=float(row.decay),
-                        embedding=list(row.embedding or []),
-                        content=row.content,
-                        metadata=dict(getattr(row, "record_metadata", None) or {}),
-                    )
-                )
-            return out
+            return [row.to_model() for row in rows]
 
     def prune_expired(self, *, before: Optional[datetime] = None) -> int:
         with self.SessionLocal() as session:
